@@ -1,78 +1,73 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
-import { Sparkles, Terminal, Cpu, ArrowRight, Play } from 'lucide-react';
 
-export default function Home() {
+export default function HomePage() {
+  const [prompt, setPrompt] = useState('');
+
   return (
-    <div class="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans">
-      <nav class="border-b border-slate-800/80 bg-slate-950/70 backdrop-blur sticky top-0 z-50 px-6 py-4 flex items-center justify-between">
-        <div class="flex items-center gap-2">
-          <div class="h-8 w-8 rounded-lg bg-sky-500 flex items-center justify-center font-mono font-bold text-slate-950">
+    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col justify-between p-6">
+      <header className="max-w-5xl mx-auto w-full flex items-center justify-between py-4">
+        <div className="flex items-center space-x-3">
+          <div className="w-10 h-10 bg-sky-500 rounded-xl flex items-center justify-center font-bold text-slate-950 text-xl">
             &lt;/&gt;
           </div>
-          <span class="font-bold text-lg tracking-tight text-white">Tshepiso <span class="text-sky-400">CodeLab</span></span>
+          <div>
+            <h1 className="font-bold text-lg leading-tight">Tshepiso CodeLab</h1>
+            <p className="text-xs text-slate-400">AI-Powered Developer Studio</p>
+          </div>
         </div>
-        <div class="hidden md:flex items-center gap-6 text-sm text-slate-400">
-          <Link href="/" class="text-white hover:text-sky-400 transition">Home</Link>
-          <Link href="/generator" class="hover:text-sky-400 transition">Code Generator</Link>
-        </div>
-        <div class="flex items-center gap-3">
-          <Link href="/generator" class="px-4 py-2 bg-sky-500 hover:bg-sky-400 text-slate-950 rounded-lg text-sm font-semibold transition flex items-center gap-2">
-            Get Started <ArrowRight class="w-4 h-4" />
-          </Link>
-        </div>
-      </nav>
+        <Link
+          href="/generator"
+          className="bg-sky-500 hover:bg-sky-400 text-slate-950 px-4 py-2 rounded-xl text-sm font-semibold transition-all"
+        >
+          Get Started &rarr;
+        </Link>
+      </header>
 
-      <main class="flex-1 flex flex-col items-center justify-center text-center px-4 py-16 max-w-5xl mx-auto">
-        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-sky-500/30 bg-sky-500/10 text-sky-400 text-xs font-medium mb-6">
-          <Sparkles class="w-3.5 h-3.5" /> Next-Gen AI Code Workspace
+      <main className="max-w-3xl mx-auto w-full text-center space-y-6 my-auto py-12">
+        <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-900 border border-slate-800 text-xs text-sky-400 font-medium">
+          <span className="w-2 h-2 rounded-full bg-sky-400 animate-pulse"></span>
+          Next-Gen AI Code Workspace
         </div>
-        <h1 class="text-4xl sm:text-6xl font-extrabold tracking-tight text-white mb-6 leading-tight">
-          Turn Your Ideas Into <br class="hidden sm:block" />
-          <span class="bg-gradient-to-r from-sky-400 via-indigo-400 to-teal-300 bg-clip-text text-transparent">
-            Working Code.
-          </span>
+
+        <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight">
+          Turn Your Ideas Into <span className="text-sky-400">Working Code.</span>
         </h1>
-        <p class="text-slate-400 text-base sm:text-lg max-w-2xl mb-10 leading-relaxed">
-          Describe what you want. Tshepiso CodeLab generates clean, syntactically correct,
-          responsive code ready for your editor or immediate browser preview.
+
+        <p className="text-slate-400 text-sm md:text-base max-w-xl mx-auto">
+          Describe what you want. Tshepiso CodeLab generates clean, syntactically correct, responsive code ready for your editor or immediate browser preview.
         </p>
 
-        <div class="w-full max-w-xl p-2 rounded-2xl bg-slate-900 border border-slate-800 shadow-2xl flex flex-col sm:flex-row gap-2">
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            if (prompt.trim()) {
+              window.location.href = `/generator?prompt=${encodeURIComponent(prompt)}`;
+            }
+          }}
+          className="bg-slate-900/80 border border-slate-800 p-3 rounded-2xl shadow-xl space-y-3"
+        >
           <input
             type="text"
-            readOnly
+            value={prompt}
+            onChange={(e) => setPrompt(e.target.value)}
             placeholder="e.g. Create a responsive student marks dashboard..."
-            class="w-full bg-transparent px-4 py-3 text-sm text-slate-200 outline-none placeholder:text-slate-600"
+            className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-sky-500"
           />
-          <Link href="/generator" class="px-6 py-3 bg-sky-500 hover:bg-sky-400 text-slate-950 rounded-xl text-sm font-semibold transition flex items-center justify-center gap-2 whitespace-nowrap">
-            Generate Code <ArrowRight class="w-4 h-4" />
-          </Link>
-        </div>
-
-        <section class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-20 text-left w-full">
-          <div class="p-6 rounded-xl bg-slate-900/50 border border-slate-800">
-            <Terminal class="w-6 h-6 text-sky-400 mb-3" />
-            <h3 class="font-semibold text-white mb-2">1. Describe</h3>
-            <p class="text-slate-400 text-sm">Use natural language or voice commands to define your requirements.</p>
-          </div>
-          <div class="p-6 rounded-xl bg-slate-900/50 border border-slate-800">
-            <Cpu class="w-6 h-6 text-indigo-400 mb-3" />
-            <h3 class="font-semibold text-white mb-2">2. Generate & Fix</h3>
-            <p class="text-slate-400 text-sm">Receive clean, validated code with automatic syntax checking.</p>
-          </div>
-          <div class="p-6 rounded-xl bg-slate-900/50 border border-slate-800">
-            <Play class="w-6 h-6 text-teal-400 mb-3" />
-            <h3 class="font-semibold text-white mb-2">3. Live Preview</h3>
-            <p class="text-slate-400 text-sm">Test and execute your code in an isolated live browser sandbox.</p>
-          </div>
-        </section>
+          <button
+            type="submit"
+            className="w-full bg-sky-500 hover:bg-sky-400 text-slate-950 font-semibold py-3 rounded-xl transition-all flex items-center justify-center space-x-2 text-sm"
+          >
+            <span>Generate Code</span>
+            <span>&rarr;</span>
+          </button>
+        </form>
       </main>
 
-      <footer class="border-t border-slate-900 py-6 text-center text-xs text-slate-600">
-        &copy; {new Date().getFullYear()} Tshepiso CodeLab. Describe it. Generate it. Run it.
+      <footer className="text-center text-slate-600 text-xs py-4 border-t border-slate-900">
+        &copy; {new Date().getFullYear()} Tshepiso CodeLab. All rights reserved.
       </footer>
     </div>
   );
