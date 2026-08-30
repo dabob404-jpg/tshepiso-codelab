@@ -1,5 +1,4 @@
 import { NextResponse } from 'next/server';
-import { GoogleGenAI } from '@google/genai';
 
 export async function POST(req: Request) {
   try {
@@ -28,28 +27,55 @@ export async function POST(req: Request) {
       });
     }
 
-    const ai = new GoogleGenAI({ apiKey });
+    const systemPrompt = `You are an expert front-end web developer.
+Build a complete, single-file responsive Web Interface based on the user's prompt using HTML, Tailwind CSS (via CDN), and JavaScript.
+RULES:
+- Return ONLY the raw HTML code. Do NOT wrap output in markdown code blocks like \`\`\`html or \`\`\`.
+- Always include <script src="https://cdn.tailwindcss.com"></script> inside the <head>.
+- Include working, interactive vanilla JavaScript inside <script> tags for any buttons, forms, calculations, or dashboard logic.
+- Deliver a modern, polished dark-theme UI with neat spacing, cards, and smooth interactions.`;
 
-    const systemInstruction = `
-      You are an expert front-end web developer.
-      Your task is to build a complete, single-file responsive Web Interface using raw HTML, Tailwind CSS (via CDN script tag), and JavaScript.
-      IMPORTANT RULES:
-      - Return ONLY raw HTML inside your output. Do not include markdown code block backticks.
-      - Include <script src="https://cdn.tailwindcss.com"></script> inside the <head>.
-      - Make sure all JavaScript features and interactive elements work seamlessly inside a single document.
-      - Ensure modern aesthetics: dark theme, rounded borders, clean spacing, and clear typography.
-    `;
+    // Try primary recommended model first, then fallback models if needed
+    const candidateModels = ['gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-2.5-pro'];
+    let generatedCode = '';
+    let lastError = '';
 
-    const response = await ai.models.generateContent({
-      model: 'gemini-2.5-flash',
-      contents: prompt,
-      config: {
-        systemInstruction,
-        temperature: 0.3,
-      },
-    });
+    for (const model of candidateModels) {
+      try {
+        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [
+              {
+                role: 'user',
+                parts: [{ text: `${systemPrompt}\n\nUser Request: ${prompt}` }]
+              }
+            ],
+            generationConfig: {
+              temperature: 0.3
+            }
+          })
+        });
 
-    let generatedCode = response.text || '';
+        const data = await res.json();
+
+        if (res.ok && data.candidates?.[0]?.content?.parts?.[0]?.text) {
+          generatedCode = data.candidates[0].content.parts[0].text;
+          break;
+        } else {
+          lastError = data.error?.message || JSON.stringify(data);
+        }
+      } catch (err: any) {
+        lastError = err.message;
+      }
+    }
+
+    if (!generatedCode) {
+      throw new Error(lastError || 'Unable to generate content across available models.');
+    }
+
+    // Clean any accidental markdown wrappers
     generatedCode = generatedCode.replace(/^```html/i, '').replace(/^```/, '').replace(/```$/, '').trim();
 
     return NextResponse.json({
@@ -64,9 +90,9 @@ export async function POST(req: Request) {
         content: `<!DOCTYPE html>
 <html>
 <body style="background:#0f172a;color:#f8fafc;font-family:sans-serif;display:flex;justify-content:center;align-items:center;height:100vh;margin:0;text-align:center;">
-  <div style="padding:2rem;border:1px solid #334155;border-radius:1rem;background:#1e293b;max-width:400px;">
-    <h2 style="color:#ef4444;margin-top:0;">Generation Failed</h2>
-    <p style="color:#94a3b8;font-size:0.875rem;">${error?.message || 'An unknown server error occurred.'}</p>
+  <div style="padding:2rem;border:1px solid #ef4444;border-radius:1rem;background:#1e293b;max-width:440px;">
+    <h2 style="color:#ef4444;margin-top:0;">Generation Notice</h2>
+    <p style="color:#94a3b8;font-size:0.875rem;">${error?.message || 'Server error occurred.'}</p>
   </div>
 </body>
 </html>`
