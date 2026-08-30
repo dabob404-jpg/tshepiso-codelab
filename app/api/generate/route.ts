@@ -1,17 +1,44 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { generateCode } from '@/lib/ai';
+import { NextResponse } from 'next/server';
+import { GoogleGenAI } from '@google/genai';
 
-export async function POST(req: NextRequest) {
+const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || '' });
+
+export async function POST(req: Request) {
   try {
-    const { prompt, mode, existingCode } = await req.json();
+    const { prompt } = await req.json();
 
-    if (!prompt && mode === 'generate') {
-      return NextResponse.json({ success: false, error: 'Prompt is required' }, { status: 400 });
+    if (!prompt) {
+      return NextResponse.json({ error: 'Prompt is required' }, { status: 400 });
     }
 
-    const data = await generateCode(prompt || '', mode, existingCode);
-    return NextResponse.json(data);
-  } catch (err: any) {
-    return NextResponse.json({ success: false, error: err.message || 'Internal Server Error' }, { status: 500 });
+    const systemInstruction = `
+      You are an expert front-end web developer.
+      Your task is to build a complete, single-file responsive Web Interface using raw HTML, Tailwind CSS (via CDN script tag), and JavaScript.
+      IMPORTANT RULES:
+      - Return ONLY raw HTML inside your output. Do not include markdown code block backticks (\`\`\`html or \`\`\`).
+      - Include <script src="https://cdn.tailwindcss.com"></script> inside the <head>.
+      - Make sure all JavaScript features, interactive elements, and UI components described by the user work seamlessly inside a single document.
+      - Ensure modern aesthetics: dark/sleek theme, rounded borders, clean spacing, clear typography, and subtle contrast.
+    `;
+
+    const response = await ai.models.generateContent({
+      model: 'gemini-2.5-flash',
+      contents: prompt,
+      config: {
+        systemInstruction,
+        temperature: 0.3,
+      },
+    });
+
+    let generatedCode = response.text || '';
+    
+    generatedCode = generatedCode.replace(/^```html/i, '').replace(/^```/, '').replace(/```$/, '').trim();
+
+    return NextResponse.json({
+      files: [{ name: 'index.html', content: generatedCode }]
+    });
+  } catch (error: any) {
+    console.error('Generation Error:', error);
+    return NextResponse.json({ error: error.message || 'Failed to generate code' }, { status: 500 });
   }
 }
