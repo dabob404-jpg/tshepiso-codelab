@@ -18,7 +18,7 @@ export async function POST(req: Request) {
           content: `<!DOCTYPE html>
 <html>
 <body style="background:#0f172a;color:#f8fafc;font-family:sans-serif;display:flex;justify-content:center;align-items:center;height:100vh;margin:0;text-align:center;">
-  <div style="padding:2rem;border:1px solid #334155;border-radius:1rem;background:#1e293b;max-w:400px;">
+  <div style="padding:2rem;border:1px solid #334155;border-radius:1rem;background:#1e293b;max-width:400px;">
     <h2 style="color:#ef4444;margin-top:0;">API Key Missing</h2>
     <p style="color:#94a3b8;font-size:0.875rem;">Please set <strong>GEMINI_API_KEY</strong> in your Vercel Project Settings and redeploy.</p>
   </div>
@@ -41,7 +41,7 @@ export async function POST(req: Request) {
     `;
 
     const response = await ai.models.generateContent({
-      model: 'gemini-1.5-flash',
+      model: 'gemini-2.5-flash',
       contents: prompt,
       config: {
         systemInstruction,
@@ -64,7 +64,7 @@ export async function POST(req: Request) {
         content: `<!DOCTYPE html>
 <html>
 <body style="background:#0f172a;color:#f8fafc;font-family:sans-serif;display:flex;justify-content:center;align-items:center;height:100vh;margin:0;text-align:center;">
-  <div style="padding:2rem;border:1px solid #334155;border-radius:1rem;background:#1e293b;max-w:400px;">
+  <div style="padding:2rem;border:1px solid #334155;border-radius:1rem;background:#1e293b;max-width:400px;">
     <h2 style="color:#ef4444;margin-top:0;">Generation Failed</h2>
     <p style="color:#94a3b8;font-size:0.875rem;">${error?.message || 'An unknown server error occurred.'}</p>
   </div>
