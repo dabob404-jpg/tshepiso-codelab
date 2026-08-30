@@ -30,13 +30,19 @@ export async function POST(req: Request) {
     const systemPrompt = `You are an expert front-end web developer.
 Build a complete, single-file responsive Web Interface based on the user's prompt using HTML, Tailwind CSS (via CDN), and JavaScript.
 RULES:
-- Return ONLY the raw HTML code. Do NOT wrap output in markdown code blocks like \`\`\`html or \`\`\`.
+- Return ONLY the raw HTML code. Do NOT wrap output in markdown code blocks.
 - Always include <script src="https://cdn.tailwindcss.com"></script> inside the <head>.
-- Include working, interactive vanilla JavaScript inside <script> tags for any buttons, forms, calculations, or dashboard logic.
-- Deliver a modern, polished dark-theme UI with neat spacing, cards, and smooth interactions.`;
+- Include working, interactive vanilla JavaScript inside <script> tags for buttons, forms, calculations, or interactive widgets.
+- Modern dark-theme aesthetic, neat spacing, rounded borders, clean UI.`;
 
-    // Try primary recommended model first, then fallback models if needed
-    const candidateModels = ['gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-2.5-pro'];
+    // Active models reported by the endpoint
+    const candidateModels = [
+      'gemini-3.6-flash',
+      'gemini-3.1-pro-preview',
+      'gemini-2.5-flash',
+      'gemini-2.0-flash'
+    ];
+
     let generatedCode = '';
     let lastError = '';
 
@@ -72,10 +78,9 @@ RULES:
     }
 
     if (!generatedCode) {
-      throw new Error(lastError || 'Unable to generate content across available models.');
+      throw new Error(lastError || 'Unable to generate code with current models.');
     }
 
-    // Clean any accidental markdown wrappers
     generatedCode = generatedCode.replace(/^```html/i, '').replace(/^```/, '').replace(/```$/, '').trim();
 
     return NextResponse.json({
