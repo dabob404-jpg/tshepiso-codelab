@@ -1,12 +1,6 @@
 'use client';
 import React, { useState } from 'react';
 
-declare global {
-  interface Window {
-    html2pdf: any;
-  }
-}
-
 export default function App() {
   const [activeTab, setActiveTab] = useState<'learn' | 'studio'>('learn');
 
@@ -50,22 +44,8 @@ export default function App() {
   };
 
   const handleDownloadPDF = () => {
-    const element = document.getElementById('lecture-pdf-content');
-    if (!element || !window.html2pdf) return;
-
-    const fileName = studyQuery.trim()
-      ? `${studyQuery.toLowerCase().replace(/[^a-z0-9]/g, '_')}_notes.pdf`
-      : 'codelab_lecture_notes.pdf';
-
-    const opt = {
-      margin:       0.5,
-      filename:     fileName,
-      image:        { type: 'jpeg', quality: 0.98 },
-      html2canvas:  { scale: 2, backgroundColor: '#020617' },
-      jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' }
-    };
-
-    window.html2pdf().set(opt).from(element).save();
+    // Triggers mobile native Save as PDF print dialog without freezing the UI thread
+    window.print();
   };
 
   const handleStudioGenerate = async () => {
@@ -90,8 +70,8 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans selection:bg-sky-500 selection:text-slate-950">
-      {/* Navigation Bar */}
-      <header className="border-b border-slate-800 bg-slate-900/90 backdrop-blur-md px-6 py-4 flex flex-wrap justify-between items-center gap-4 sticky top-0 z-50">
+      {/* Navigation Bar (Hidden during PDF print export) */}
+      <header className="print:hidden border-b border-slate-800 bg-slate-900/90 backdrop-blur-md px-6 py-4 flex flex-wrap justify-between items-center gap-4 sticky top-0 z-50">
         <div className="flex items-center gap-3">
           <div className="bg-sky-500/10 text-sky-400 p-2.5 rounded-xl border border-sky-500/20 font-mono font-bold text-sm">
             &lt;/&gt;
@@ -129,8 +109,8 @@ export default function App() {
       {activeTab === 'learn' ? (
         /* Dynamic Professor Study Hub */
         <main className="flex-1 p-4 md:p-6 max-w-5xl mx-auto w-full flex flex-col gap-6">
-          {/* Query Bar */}
-          <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-4 md:p-5 shadow-xl space-y-3">
+          {/* Query Bar (Hidden during PDF print export) */}
+          <div className="print:hidden bg-slate-900/80 border border-slate-800 rounded-2xl p-4 md:p-5 shadow-xl space-y-3">
             <label className="text-xs font-bold text-slate-400 uppercase tracking-wider block">
               Ask Professor CodeLab:
             </label>
@@ -176,9 +156,9 @@ export default function App() {
           </div>
 
           {/* Dynamic Lecture Display Box */}
-          <div className="bg-slate-900/70 border border-slate-800 rounded-2xl p-6 md:p-8 shadow-xl min-h-[500px] flex flex-col gap-4">
-            {/* Top Toolbar with PDF Download Button */}
-            <div className="flex justify-between items-center border-b border-slate-800 pb-3">
+          <div className="bg-slate-900/70 border border-slate-800 rounded-2xl p-6 md:p-8 shadow-xl min-h-[500px] flex flex-col gap-4 print:bg-white print:text-black print:border-none print:shadow-none">
+            {/* Top Toolbar with PDF Download Button (Hidden during PDF print export) */}
+            <div className="print:hidden flex justify-between items-center border-b border-slate-800 pb-3">
               <span className="text-xs font-mono text-slate-400 uppercase tracking-wider">
                 Interactive Lecture Module
               </span>
@@ -187,7 +167,7 @@ export default function App() {
                 disabled={studyLoading}
                 className="bg-emerald-500 hover:bg-emerald-400 disabled:opacity-50 text-slate-950 font-bold px-4 py-2 rounded-xl text-xs transition-all flex items-center gap-2 shadow-md shadow-emerald-500/20"
               >
-                📥 Download PDF Notes
+                📥 Save / Print PDF
               </button>
             </div>
 
@@ -198,9 +178,8 @@ export default function App() {
               </div>
             ) : (
               <div
-                id="lecture-pdf-content"
                 dangerouslySetInnerHTML={{ __html: studyContent }}
-                className="prose prose-invert max-w-none text-slate-300 space-y-4 leading-relaxed p-2"
+                className="prose prose-invert max-w-none text-slate-300 space-y-4 leading-relaxed p-2 print:text-black"
               />
             )}
           </div>
